@@ -1,24 +1,65 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useEffect, useState } from 'react';
+import { TodoForm } from './components/TodoForm';
+import { Todo } from './components/Todo';
+import api, { TodoItem } from './api/todo';
 import './App.css';
 
-function App() {
+function App(): JSX.Element {
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+
+  const addTodo = async (text: string) => {
+    let newTodo: TodoItem = { id: '', text, isCompleted: false };
+    const todoFromServer = await api.saveTodo(newTodo);
+    if (todoFromServer) {
+      const newTodos = [...todos, todoFromServer];
+      setTodos(newTodos);
+    }
+  };
+
+  const completeTodo = async (index: number) => {
+    const completedTodo = todos[index];
+    completedTodo.isCompleted = true;
+    const todoFromServer = await api.updateTodo(completedTodo);
+    if (todoFromServer) {
+      const newTodos = [...todos];
+      newTodos[index] = todoFromServer;
+      setTodos(newTodos);
+    }
+  };
+
+  const removeTodo = async (index: number) => {
+    const result = await api.removeTodo(todos[index].id as number);
+    if (result) {
+      const newTodos = [...todos];
+      newTodos.splice(index, 1);
+      setTodos(newTodos);
+    }
+  };
+
+  useEffect(() => {
+    const getTodos = async () => {
+      const todosFromServer = await api.getTodos();
+      if (todosFromServer) {
+        setTodos(todosFromServer);
+      }
+    };
+    getTodos();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <div className="todo-list">
+        {todos.map((todo, index) => (
+          <Todo
+            key={index}
+            index={index}
+            todo={todo}
+            completeTodo={completeTodo}
+            removeTodo={removeTodo}
+          />
+        ))}
+        <TodoForm addTodo={addTodo} />
+      </div>
     </div>
   );
 }
