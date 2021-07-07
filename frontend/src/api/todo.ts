@@ -1,9 +1,5 @@
-const apiURL = `${process.env.REACT_APP_API_URL}/todos`;
-
-const wait = async (ms: number): Promise<void> =>
-  new Promise(resolve => {
-    setTimeout(resolve, ms);
-  });
+// const apiURL = `${process.env.REACT_APP_API_URL}/todos`;
+const apiURL = '/api/todos';
 
 export type TodoItem = {
   id: number | '';
@@ -46,21 +42,23 @@ export const updateTodo = async (item: TodoItem): Promise<TodoItem | undefined> 
   return result;
 };
 
-export const removeTodo = async (id: number): Promise<TodoItem | undefined> => {
-  let result: TodoItem | undefined;
+export const removeTodo = async (id: number): Promise<boolean> => {
+  let result = false;
   const response = await fetch(`${apiURL}/${id}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' }
   });
   if (response.ok && response.body) {
-    result = await response.json();
+    result = true;
   }
   return result;
 };
 
-export default {
+const api = {
   getTodos,
   saveTodo,
   updateTodo,
   removeTodo
 };
+
+export default api;
